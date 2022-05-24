@@ -1,5 +1,5 @@
 import moongose from "mongoose";
-import 'dotenv/config'
+import "dotenv/config";
 
 export async function connect() {
   try {

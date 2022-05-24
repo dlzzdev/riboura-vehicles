@@ -29,7 +29,7 @@ const Car = mongoose.model(
         type: String,
       },
       images: {
-        type: Array
+        type: Array,
       },
       available: {
         type: Boolean,

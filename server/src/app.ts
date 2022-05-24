@@ -11,7 +11,7 @@ app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.static("../public"));
 
 // Routes
-app.use('/users/', UserRoutes)
+app.use("/users/", UserRoutes);
 
 app.listen(3333, async () => {
   await connect();
