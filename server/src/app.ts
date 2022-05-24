@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { connect } from "./db/connect";
+import UserRoutes from "./routes/UserRoutes";
 
 const app = express();
 
@@ -8,6 +9,9 @@ const app = express();
 app.use(express.json());
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.static("../public"));
+
+// Routes
+app.use('/users/', UserRoutes)
 
 app.listen(3333, async () => {
   await connect();
