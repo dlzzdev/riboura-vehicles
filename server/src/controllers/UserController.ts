@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { createUserToken } from "../helpers/createUserToken";
 import { getToken } from "../helpers/getToken";
+import mongoose from "mongoose";
+import { getUserByToken } from "../helpers/getUserByToken";
 
 export async function register(req: Request, res: Response) {
   const { name, email, phone, password, confirmPassword } = req.body;
@@ -88,8 +90,7 @@ export async function checkUser(req: Request, res: Response) {
     const token = getToken(req);
     const decodedToken = (await jwt.verify(token, "secret")) as JwtPayload;
 
-    currentUser = await User.findById<any>(decodedToken.id);
-    currentUser.password = undefined;
+    currentUser = await User.findById(decodedToken.id).select("-password");
   } else {
     currentUser = null;
   }
@@ -97,4 +98,78 @@ export async function checkUser(req: Request, res: Response) {
   return res.json({
     user: currentUser,
   });
+}
+
+export async function getUserById(req: Request, res: Response) {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) return false;
+
+  const user = await User.findById(id).select("-password");
+  if (!user) {
+    return res.status(422).json({
+      message: "Usuário não encontrado.",
+    });
+  }
+
+  return res.json({
+    user,
+  });
+}
+
+export async function editUser(req: Request, res: Response) {
+  const { id } = req.params;
+
+  const { name, email, phone, password, confirmPassword } = req.body;
+
+  const token = getToken(req);
+  const user = await getUserByToken(token, res);
+
+  let image = "";
+
+  if (!name || !email || !phone) {
+    return res.status(400).json({
+      message: "Todos os campos são obrigatórios.",
+    });
+  }
+
+  user.name = name;
+  user.phone = phone;
+
+  const userExists = await User.findOne({ email });
+
+  if (user.email !== email && userExists) {
+    return res.status(400).json({
+      message: "E-mail já cadastrado, por gentileza utilize outro.",
+    });
+  }
+
+  user.email = email;
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({
+      message: "As senhas não coincidem.",
+    });
+  } else if (password === confirmPassword && password != null) {
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    user.password = passwordHash;
+  }
+
+  try {
+    await User.findOneAndUpdate(
+      { _id: user._id },
+      { $set: user },
+      { new: true }
+    );
+    return res.status(200).json({
+      message: "Usuário atualizado com sucesso.",
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: err,
+    });
+  }
 }
