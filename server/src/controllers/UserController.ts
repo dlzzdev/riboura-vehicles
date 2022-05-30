@@ -1,7 +1,9 @@
 import User from "../models/User";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { createUserToken } from "../helpers/createUserToken";
+import { getToken } from "../helpers/getToken";
 
 export async function register(req: Request, res: Response) {
   const { name, email, phone, password, confirmPassword } = req.body;
@@ -74,4 +76,25 @@ export async function login(req: Request, res: Response) {
   }
 
   await createUserToken(user, req, res);
+}
+
+interface JwtPayload {
+  id: string;
+}
+
+export async function checkUser(req: Request, res: Response) {
+  let currentUser;
+  if (req.headers.authorization) {
+    const token = getToken(req);
+    const decodedToken = (await jwt.verify(token, "secret")) as JwtPayload;
+
+    currentUser = await User.findById<any>(decodedToken.id);
+    currentUser.password = undefined;
+  } else {
+    currentUser = null;
+  }
+
+  return res.json({
+    user: currentUser,
+  });
 }
