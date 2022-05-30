@@ -48,3 +48,30 @@ export async function register(req: Request, res: Response) {
     });
   }
 }
+
+export async function login(req: Request, res: Response) {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      message: "Os campos de e-mail e senha são obrigatórios.",
+    });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({
+      message: "Não há um usuário cadastrado com este e-mail.",
+    });
+  }
+
+  // Check if passowrd match with database password
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res.status(400).json({
+      message: "Senha incorreta.",
+    });
+  }
+
+  await createUserToken(user, req, res);
+}
