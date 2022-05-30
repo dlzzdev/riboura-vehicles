@@ -124,8 +124,10 @@ export async function editUser(req: Request, res: Response) {
 
   const token = getToken(req);
   const user = await getUserByToken(token, res);
-
-  let image = "";
+  
+  if (req.file) {
+    user.image = req.file.filename;
+  }
 
   if (!name || !email || !phone) {
     return res.status(400).json({
