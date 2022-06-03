@@ -4,14 +4,20 @@ import UseAuth from "../hooks/UseAuth";
 type UserContextType = {
   user?: any;
   register: (user: any) => void;
+  authenticated: boolean;
+  logout: (user: any) => void;
 };
 
 const Context = createContext({} as UserContextType);
 
 function UserProvider({ children }: any) {
-  const { register } = UseAuth();
+  const { authenticated, register, logout } = UseAuth();
 
-  return <Context.Provider value={{ register }}>{children}</Context.Provider>;
+  return (
+    <Context.Provider value={{ authenticated, register, logout }}>
+      {children}
+    </Context.Provider>
+  );
 }
 
 export { Context, UserProvider };
