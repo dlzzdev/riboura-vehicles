@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import useAuth from "../hooks/useAuth";
+import UseAuth from "../hooks/UseAuth";
 
 type UserContextType = {
   user?: any;
@@ -9,7 +9,7 @@ type UserContextType = {
 const Context = createContext({} as UserContextType);
 
 function UserProvider({ children }: any) {
-  const { register } = useAuth();
+  const { register } = UseAuth();
 
   return <Context.Provider value={{ register }}>{children}</Context.Provider>;
 }
