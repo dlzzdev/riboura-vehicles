@@ -36,7 +36,7 @@ export default function UseAuth() {
 
   async function authUser(data: any) {
     setAuthenticated(true);
-    localStorage.setItem("token", JSON.stringify(data.token));
+    localStorage.setItem("token", data.token);
     navigate("/");
   }
 
@@ -66,7 +66,6 @@ export default function UseAuth() {
     navigate("/");
     SetFlashMessage(msgText, msgType);
   }
-
 
   return { authenticated, register, login, logout };
 }
