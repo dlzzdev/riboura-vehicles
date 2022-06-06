@@ -22,6 +22,9 @@ export const Navbar = () => {
         {authenticated ? (
           <>
             <li>
+              <Link to="/car/mycars">Meus carros</Link>
+            </li>
+            <li>
               <Link to="/user/profile">Perfil</Link>
             </li>
             <li onClick={logout}>Sair</li>

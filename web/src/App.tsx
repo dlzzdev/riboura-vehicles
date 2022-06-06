@@ -6,6 +6,8 @@ import { Message } from "./components/layout/Message";
 import { Navbar } from "./components/layout/Navbar";
 import { Login } from "./components/pages/Auth/Login";
 import { Register } from "./components/pages/Auth/Register";
+import { AddCar } from "./components/pages/Car/AddCar";
+import { MyCars } from "./components/pages/Car/MyCars";
 import { Home } from "./components/pages/Home";
 import { Profile } from "./components/pages/User/Profile";
 import { UserProvider } from "./context/UserContext";
@@ -21,6 +23,8 @@ function App() {
             <Route path="/login/" element={<Login />} />
             <Route path="/register/" element={<Register />} />
             <Route path="/user/profile/" element={<Profile />} />
+            <Route path="/car/mycars/" element={<MyCars />} />
+            <Route path="/car/add/" element={<AddCar />} />
             <Route path="/" element={<Home />} />
           </Routes>
         </Container>

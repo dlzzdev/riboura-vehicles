@@ -30,3 +30,15 @@
   color: #16479d;
   font-weight: bold;
 }
+
+.preview_car_images {
+  display: flex;
+  justify-content: center;
+  margin: 1em;
+}
+
+.preview_car_images img {
+  width: 100px;
+  height: 100px;
+  margin-left: 1em;
+}
