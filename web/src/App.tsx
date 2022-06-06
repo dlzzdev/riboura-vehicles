@@ -7,6 +7,7 @@ import { Navbar } from "./components/layout/Navbar";
 import { Login } from "./components/pages/Auth/Login";
 import { Register } from "./components/pages/Auth/Register";
 import { AddCar } from "./components/pages/Car/AddCar";
+import { CarDetails } from "./components/pages/Car/CarDetails";
 import { EditCar } from "./components/pages/Car/EditCar";
 import { MyCars } from "./components/pages/Car/MyCars";
 import { Home } from "./components/pages/Home";
@@ -24,6 +25,7 @@ function App() {
             <Route path="/login/" element={<Login />} />
             <Route path="/register/" element={<Register />} />
             <Route path="/user/profile/" element={<Profile />} />
+            <Route path="/car/:id" element={<CarDetails />} />
             <Route path="/car/mycars/" element={<MyCars />} />
             <Route path="/car/add/" element={<AddCar />} />
             <Route path="/car/edit/:id" element={<EditCar />} />
