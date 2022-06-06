@@ -22,9 +22,6 @@ export const Navbar = () => {
         {authenticated ? (
           <>
             <li>
-              <Link to="/car/mypurchases">Minhas compras</Link>
-            </li>
-            <li>
               <Link to="/car/mycars">Meus carros</Link>
             </li>
             <li>

@@ -35,7 +35,7 @@ export const MyPurchases = () => {
               />
               <span className="bold">{car.model}</span>
               <div>
-                <p>
+                <p className={styles.contacts}>
                   Contate o vendedor para mais informações: <br />
                   Ligue para: <span className="bold">{car.user.name}</span> Celular: <span className="bold">{car.user.phone}</span>
                 </p>
