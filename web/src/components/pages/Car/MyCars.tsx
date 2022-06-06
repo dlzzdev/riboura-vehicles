@@ -25,6 +25,22 @@ export const MyCars = () => {
       });
   }, [SetFlashMessage, token]);
 
+  async function deleteCar(id: string) {
+    await api
+      .delete(`/cars/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        SetFlashMessage(response.data.message, "success");
+        setCars(cars.filter((car) => car._id !== id));
+      })
+      .catch((err) => {
+        SetFlashMessage(err.response.data.message, "error");
+      });
+  }
+
   return (
     <section>
       <div className={styles.carslist_header}>
@@ -50,7 +66,13 @@ export const MyCars = () => {
                       </button>
                     )}
                     <Link to={`/car/edit/${car._id}`}>Editar</Link>
-                    <button>Excluir</button>
+                    <button
+                      onClick={() => {
+                        deleteCar(car._id);
+                      }}
+                    >
+                      Excluir
+                    </button>
                   </>
                 ) : (
                   <p>Carro vendido</p>
