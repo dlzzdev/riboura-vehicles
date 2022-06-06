@@ -20,7 +20,6 @@ export const MyCars = () => {
       .then((response) => {
         setCars(response.data.cars);
       });
-      
   }, [token]);
 
   async function deleteCar(id: string) {
@@ -33,6 +32,21 @@ export const MyCars = () => {
       .then((response) => {
         SetFlashMessage(response.data.message, "success");
         setCars(cars.filter((car) => car._id !== id));
+      })
+      .catch((err) => {
+        SetFlashMessage(err.response.data.message, "error");
+      });
+  }
+
+  async function concludeSale(id: string) {
+    await api
+      .patch(`/cars/conclude/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        SetFlashMessage(response.data.message, "success");
       })
       .catch((err) => {
         SetFlashMessage(err.response.data.message, "error");
@@ -59,7 +73,12 @@ export const MyCars = () => {
                 {car.available ? (
                   <>
                     {car.buyer && (
-                      <button className={styles.conclude_btn}>
+                      <button
+                        className={styles.conclude_btn}
+                        onClick={() => {
+                          concludeSale(car._id);
+                        }}
+                      >
                         Concluir venda
                       </button>
                     )}
