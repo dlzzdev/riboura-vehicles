@@ -45,7 +45,7 @@ export const CarForm = ({ handleSubmit, carData, btnText }: any) => {
             Array.from(car.images).map((img: any, index: number) => {
               return (
                 <img
-                  src={`${process.env.REACT_APP_API_URL}/images/cars/${img}`}
+                  src={`${process.env.REACT_APP_API}/images/cars/${img}`}
                   key={`${car.name}+${index}`}
                   alt={car.name}
                 />
