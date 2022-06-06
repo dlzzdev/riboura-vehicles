@@ -26,7 +26,6 @@ export const CarForm = ({ handleSubmit, carData, btnText }: any) => {
 
   function handleFormSubmit(e: any) {
     e.preventDefault();
-    console.log(car);
     handleSubmit(car);
   }
 
