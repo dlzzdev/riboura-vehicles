@@ -19,11 +19,9 @@ export const MyCars = () => {
       })
       .then((response) => {
         setCars(response.data.cars);
-      })
-      .catch((err) => {
-        SetFlashMessage(err.response.data.message, "error");
       });
-  }, [SetFlashMessage, token]);
+      
+  }, [token]);
 
   async function deleteCar(id: string) {
     await api
