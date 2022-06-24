@@ -4,13 +4,11 @@ import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { createUserToken } from "../helpers/createUserToken";
 import { getToken } from "../helpers/getToken";
-import mongoose from "mongoose";
 import { getUserByToken } from "../helpers/getUserByToken";
 
 export async function register(req: Request, res: Response) {
   const { name, email, phone, password, confirmPassword } = req.body;
 
-  // Validations
   if (!name || !email || !phone || !password || !confirmPassword) {
     return res.status(400).json({
       message: "Todos os campos são obrigatórios.",
@@ -26,15 +24,13 @@ export async function register(req: Request, res: Response) {
   const userExists = await User.findOne({ email });
   if (userExists) {
     return res.status(400).json({
-      message: "Usuário já cadastrado.",
+      message: "E-mail já cadastrado, por gentileza utilize outro.",
     });
   }
 
-  // Create password
   const salt = await bcrypt.genSalt(12);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  // Create user
   const user = new User({
     name,
     email,
@@ -65,11 +61,10 @@ export async function login(req: Request, res: Response) {
   const user = await User.findOne({ email });
   if (!user) {
     return res.status(400).json({
-      message: "Não há um usuário cadastrado com este e-mail.",
+      message: "Não há nenhum usuário cadastrado com esse e-mail.",
     });
   }
 
-  // Check if passowrd match with database password
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     return res.status(400).json({
@@ -85,9 +80,9 @@ interface JwtPayload {
 }
 
 export async function checkUser(req: Request, res: Response) {
+  const token = getToken(req);
   let currentUser;
-  if (req.headers.authorization) {
-    const token = getToken(req);
+  if (token !== "null") {
     const decodedToken = (await jwt.verify(token, "secret")) as JwtPayload;
 
     currentUser = await User.findById(decodedToken.id).select("-password");
@@ -103,8 +98,6 @@ export async function checkUser(req: Request, res: Response) {
 export async function getUserById(req: Request, res: Response) {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) return false;
-
   const user = await User.findById(id).select("-password");
   if (!user) {
     return res.status(422).json({
@@ -118,13 +111,11 @@ export async function getUserById(req: Request, res: Response) {
 }
 
 export async function editUser(req: Request, res: Response) {
-  const { id } = req.params;
-
   const { name, email, phone, password, confirmPassword } = req.body;
 
   const token = getToken(req);
   const user = await getUserByToken(token, res);
-  
+
   if (req.file) {
     user.image = req.file.filename;
   }
@@ -171,7 +162,7 @@ export async function editUser(req: Request, res: Response) {
   } catch (err) {
     console.log(err);
     return res.status(500).json({
-      message: err,
+      message: "Falha ao atualizar usuário.",
     });
   }
 }

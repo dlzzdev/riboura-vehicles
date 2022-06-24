@@ -1,23 +1,47 @@
-import Car from "../models/Car";
+import Vehicle from "../models/Vehicle";
 import { Request, Response } from "express";
 import { getToken } from "../helpers/getToken";
 import { getUserByToken } from "../helpers/getUserByToken";
-import mongoose from "mongoose";
 
-export async function create(req: Request, res: Response) {
-  const { model, brand, year, milage, price, description } = req.body;
+export async function createVehicle(req: Request, res: Response) {
+  const {
+    brand,
+    model,
+    years,
+    shift,
+    fuel,
+    steering,
+    motor_power,
+    type,
+    mileage,
+    color,
+    price,
+  } = req.body;
 
   const available = true;
 
-  if (!model || !brand || !year || !milage || !price) {
+  if (
+    !brand ||
+    !model ||
+    !years ||
+    !shift ||
+    !fuel ||
+    !steering ||
+    !motor_power ||
+    !type ||
+    !mileage ||
+    !color ||
+    !price
+  ) {
     return res.status(422).json({
       message: "Todos os campos são obrigatórios.",
     });
   }
 
-  if (milage < 0 || price < 0) {
+  if (mileage < 0 || price < 0 || years < 0) {
     return res.status(422).json({
-      message: "O campo milage e price devem ser positivos.",
+      message:
+        "Os campos de ano, quilometragem e preço devem ter números positivos.",
     });
   }
 
@@ -32,54 +56,61 @@ export async function create(req: Request, res: Response) {
   const token = getToken(req);
   const user = await getUserByToken(token, res);
 
-  const car = new Car({
-    model,
+  const vehicle = new Vehicle({
     brand,
-    year,
-    milage,
+    model,
+    years,
+    shift,
+    fuel,
+    steering,
+    motor_power,
+    type,
+    mileage,
+    color,
     price,
-    description,
     images: [],
     available,
     user: {
       _id: user._id,
       name: user.name,
       image: user.image,
+      email: user.email,
       phone: user.phone,
     },
   });
 
   images.map((image: any) => {
-    car.images.push(image.filename);
+    vehicle.images.push(image.filename);
   });
 
   try {
-    const newCar = await car.save();
+    await vehicle.save();
     return res.status(201).json({
-      message: "Carro cadastrado com sucesso.",
-      newCar,
+      message: "Anúncio criado com sucesso.",
     });
   } catch (e) {
     res.status(500).json({ message: e });
   }
 }
 
-export async function getAll(req: Request, res: Response) {
-  const cars = await Car.find().sort("-createdAt");
+export async function getAllVehicles(req: Request, res: Response) {
+  const vehicles = await Vehicle.find().sort("-createdAt");
 
   return res.status(200).json({
-    cars,
+    vehicles,
   });
 }
 
-export async function getAllUserCars(req: Request, res: Response) {
+export async function getAllUserVehicles(req: Request, res: Response) {
   const token = getToken(req);
   const user = await getUserByToken(token, res);
 
-  const cars = await Car.find({ "user._id": user._id }).sort("-createdAt");
+  const vehicles = await Vehicle.find({ "user._id": user._id }).sort(
+    "-createdAt"
+  );
 
   return res.status(200).json({
-    cars,
+    vehicles,
   });
 }
 
@@ -87,111 +118,119 @@ export async function getAllUserPurchases(req: Request, res: Response) {
   const token = getToken(req);
   const user = await getUserByToken(token, res);
 
-  const cars = await Car.find({ "buyer._id": user._id }).sort("-createdAt");
+  const vehicles = await Vehicle.find({ "buyer._id": user._id }).sort(
+    "-createdAt"
+  );
 
   return res.status(200).json({
-    cars,
+    vehicles,
   });
 }
 
-export async function getCarById(req: Request, res: Response) {
+export async function getVehicleById(req: Request, res: Response) {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(422).json({
-      message: "ID inválido.",
-    });
-  }
+  const vehicle = await Vehicle.findOne({ _id: id });
 
-  const car = await Car.findOne({ _id: id });
-
-  if (!car) {
+  if (!vehicle) {
     return res.status(404).json({
-      message: "Veicúlo não encontrado.",
+      message: "O veículo não foi encontrado.",
     });
   }
 
   return res.status(200).json({
-    car,
+    vehicle,
   });
 }
 
-export async function removeCarById(req: Request, res: Response) {
+export async function removeVehicleById(req: Request, res: Response) {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(422).json({
-      message: "ID inválido.",
-    });
-  }
+  const vehicle = await Vehicle.findOne({ _id: id });
 
-  const car = await Car.findOne({ _id: id });
-
-  if (!car) {
+  if (!vehicle) {
     return res.status(404).json({
-      message: "Veicúlo não encontrado.",
+      message: "O veículo não foi encontrado.",
     });
   }
 
   const token = getToken(req);
   const user = await getUserByToken(token, res);
 
-  if (car.user._id.toString() !== user._id.toString()) {
+  if (vehicle.user._id.toString() !== user._id.toString()) {
     return res.status(401).json({
-      message: "Você não tem permissão para remover este veículo.",
+      message: "Você não tem permissão para remover o anúncio.",
     });
   }
 
   try {
-    await Car.deleteOne({ _id: id });
+    await Vehicle.deleteOne({ _id: id });
     return res.status(200).json({
-      message: "Veicúlo removido com sucesso.",
+      message: "Anúncio removido com sucesso.",
     });
   } catch (e) {
     return res.status(500).json({
-      message: "Erro ao remover veicúlo.",
+      message: "Erro ao remover o anúncio.",
     });
   }
 }
 
-export async function updateCar(req: Request, res: Response) {
+export async function updateVehicle(req: Request, res: Response) {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(422).json({
-      message: "ID inválido.",
-    });
-  }
+  const vehicle = await Vehicle.findOne({ _id: id });
 
-  const car = await Car.findOne({ _id: id });
-
-  if (!car) {
+  if (!vehicle) {
     return res.status(404).json({
-      message: "Veicúlo não encontrado.",
+      message: "O veículo não foi encontrado.",
     });
   }
 
-  const { model, brand, year, milage, price, description, available } =
-    req.body;
+  const {
+    brand,
+    model,
+    years,
+    shift,
+    fuel,
+    steering,
+    motor_power,
+    type,
+    mileage,
+    color,
+    price,
+  } = req.body;
 
   const token = getToken(req);
   const user = await getUserByToken(token, res);
 
-  if (car.user._id.toString() !== user._id.toString()) {
+  if (vehicle.user._id.toString() !== user._id.toString()) {
     return res.status(401).json({
-      message: "Você não tem permissão para atualizar este veículo.",
+      message: "Você não tem permissão para atualizar este anúncio.",
     });
   }
 
-  if (!model || !brand || !year || !milage || !price) {
+  if (
+    !brand ||
+    !model ||
+    !years ||
+    !shift ||
+    !fuel ||
+    !steering ||
+    !motor_power ||
+    !type ||
+    !mileage ||
+    !color ||
+    !price
+  ) {
     return res.status(422).json({
       message: "Todos os campos são obrigatórios.",
     });
   }
 
-  if (milage < 0 || price < 0) {
+  if (mileage < 0 || price < 0 || years < 0) {
     return res.status(422).json({
-      message: "O campo milage e price devem ser positivos.",
+      message:
+        "Os campos de ano, quilometragem e preço devem ter números positivos.",
     });
   }
 
@@ -199,64 +238,63 @@ export async function updateCar(req: Request, res: Response) {
 
   if (images.length > 0) {
     images.map((image: any) => {
-      car.images.push(image.filename);
+      vehicle.images.push(image.filename);
     });
   }
 
-  car.model = model;
-  car.brand = brand;
-  car.year = year;
-  car.milage = milage;
-  car.price = price;
-  car.description = description;
+  vehicle.brand = brand;
+  vehicle.model = model;
+  vehicle.years = years;
+  vehicle.shift = shift;
+  vehicle.fuel = fuel;
+  vehicle.steering = steering;
+  vehicle.motor_power = motor_power;
+  vehicle.type = type;
+  vehicle.mileage = mileage;
+  vehicle.color = color;
+  vehicle.price = price;
 
   try {
-    await Car.updateOne({ _id: id }, car);
+    await Vehicle.updateOne({ _id: id }, vehicle);
     return res.status(200).json({
-      message: "Veicúlo atualizado com sucesso.",
+      message: "Anúncio atualizado com sucesso.",
     });
   } catch (e) {
     return res.status(500).json({
-      message: "Erro ao atualizar veicúlo.",
+      message: "Erro ao atualizar o anúncio.",
     });
   }
 }
 
-export async function schedule(req: Request, res: Response) {
+export async function scheduleVehicle(req: Request, res: Response) {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(422).json({
-      message: "ID inválido.",
-    });
-  }
+  const vehicle = await Vehicle.findOne({ _id: id });
 
-  const car = await Car.findOne({ _id: id });
-
-  if (!car) {
+  if (!vehicle) {
     return res.status(404).json({
-      message: "Veicúlo não encontrado.",
+      message: "O veículo não foi encontrado.",
     });
   }
 
   const token = getToken(req);
   const user = await getUserByToken(token, res);
 
-  if (car.user._id.toString() === user._id.toString()) {
+  if (vehicle.user._id.toString() === user._id.toString()) {
     return res.status(401).json({
       message: "Você não pode agendar uma visita ao seu próprio véiculo.",
     });
   }
 
-  if (car.buyer) {
-    if (car.buyer._id.toString() === user._id.toString()) {
+  if (vehicle.buyer) {
+    if (vehicle.buyer._id.toString() === user._id.toString()) {
       return res.status(401).json({
         message: "Você já agendou uma visita a este veículo.",
       });
     }
   }
 
-  car.buyer = {
+  vehicle.buyer = {
     _id: user._id,
     name: user.name,
     email: user.email,
@@ -265,9 +303,9 @@ export async function schedule(req: Request, res: Response) {
   };
 
   try {
-    await Car.updateOne({ _id: id }, car);
+    await Vehicle.updateOne({ _id: id }, vehicle);
     return res.status(200).json({
-      message: `Agendamento realizado com sucesso, entre em contato com ${car.user.name} para confirmar a visita.`,
+      message: `Agendamento realizado com sucesso, entre em contato com ${vehicle.user.name} para confirmar a visita.`,
     });
   } catch (e) {
     return res.status(500).json({
@@ -279,45 +317,39 @@ export async function schedule(req: Request, res: Response) {
 export async function concludeSale(req: Request, res: Response) {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(422).json({
-      message: "ID inválido.",
-    });
-  }
+  const vehicle = await Vehicle.findOne({ _id: id });
 
-  const car = await Car.findOne({ _id: id });
-
-  if (!car) {
+  if (!vehicle) {
     return res.status(404).json({
-      message: "Veicúlo não encontrado.",
+      message: "O veículo não foi encontrado.",
     });
   }
 
   const token = getToken(req);
   const user = await getUserByToken(token, res);
 
-  if (car.user._id.toString() !== user._id.toString()) {
+  if (vehicle.user._id.toString() !== user._id.toString()) {
     return res.status(401).json({
-      message: "Você não tem permissão para concluir a compra deste veículo.",
+      message: "Você não tem permissão para finalizar este anúncio.",
     });
   }
 
-  if (!car.available) {
+  if (!vehicle.available) {
     return res.status(401).json({
-      message: "Você já concluiu a venda deste veículo.",
+      message: "Este veículo já foi vendido.",
     });
   }
 
-  car.available = false;
+  vehicle.available = false;
 
   try {
-    await Car.updateOne({ _id: id }, car);
+    await Vehicle.updateOne({ _id: id }, vehicle);
     return res.status(200).json({
-      message: "A compra foi concluída com sucesso.",
+      message: "Anúncio finalizado com sucesso.",
     });
   } catch (e) {
     return res.status(500).json({
-      message: "Erro ao concluir compra.",
+      message: "Erro ao finalizar o anúncio.",
     });
   }
 }

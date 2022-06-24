@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
-import formStyles from "../../form/Form.module.css";
 import { Input } from "../../form/Input";
-import styles from "./Profile.module.css";
 import api from "../../../utils/api";
-import UseFlashMessage from "../../../hooks/UseFlashMessage";
-import { RoundedImage } from "../../layout/RoundedImage";
+import { useFlashMessage } from "../../../hooks/useFlashMessage";
 
 export const Profile = () => {
   const [user, setUser]: any = useState({
@@ -18,19 +15,12 @@ export const Profile = () => {
   });
   const [preview, setPreview] = useState();
   const [token] = useState(localStorage.getItem("token" || ""));
-  const { SetFlashMessage } = UseFlashMessage();
+  const { setFlashMessage } = useFlashMessage();
 
   useEffect(() => {
-    api
-      .get("/users/checkuser", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        setUser(res.data.user);
-      });
-  
+    api.get("/users/checkuser").then((res) => {
+      setUser(res.data.user);
+    });
   }, [token]);
 
   function onFileChange(e: any) {
@@ -54,8 +44,6 @@ export const Profile = () => {
       formData.append(key, user[key]);
     });
 
-    console.log(user);
-
     await api
       .patch(`/users/edit/${user._id}`, formData, {
         headers: {
@@ -72,70 +60,84 @@ export const Profile = () => {
         msgText = err.response.data.message;
       });
 
-    SetFlashMessage(msgText, msgType);
+    setFlashMessage(msgText, msgType);
   }
   return (
-    <section>
-      <div className={styles.profile_header}>
-        <h1>Perfil</h1>
-        {(user.image || preview) && (
-          <RoundedImage
-            src={
-              preview
-                ? URL.createObjectURL(preview)
-                : `${process.env.REACT_APP_API}/images/users/${user.image}`
-            }
-            alt={user.name}
-          />
-        )}
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          {(user.image || preview) && (
+            <img
+              className="mx-auto h-48 max-w-xs w-auto shadow rounded-full border-4"
+              src={
+                preview
+                  ? URL.createObjectURL(preview)
+                  : `${process.env.REACT_APP_API}/images/users/${user.image}`
+              }
+              alt={user.name}
+            />
+          )}
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-200">
+            Meu perfil
+          </h2>
+        </div>
+        <div className="rounded bg-neutral-900 max-w-md rounded overflow-hidden shadow-xl p-5">
+          <form className="space-y-" onSubmit={handleSubmit}>
+            <div className="rounded-md shadow-sm -space-y-px">
+              <div className="grid gap-2 text-slate-200">
+                <Input
+                  type="file"
+                  name="image"
+                  handleOnChange={onFileChange}
+                  placeholder="Foto de perfil (PNG, JPG)"
+                />
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Digite o seu email"
+                  handleOnChange={handleChange}
+                  value={user.email || ""}
+                />
+                <Input
+                  type="text"
+                  name="name"
+                  placeholder="Digite o seu nome"
+                  handleOnChange={handleChange}
+                  value={user.name || ""}
+                />
+                <Input
+                  type="text"
+                  name="phone"
+                  placeholder="Digite o seu telefone"
+                  handleOnChange={handleChange}
+                  value={user.phone || ""}
+                />
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Digite a sua senha"
+                  handleOnChange={handleChange}
+                />
+                <Input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirme sua senha"
+                  handleOnChange={handleChange}
+                />
+              </div>
+            </div>
+            <div>
+              <button
+                type="submit"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <span className="absolute left-0 inset-y-0 flex items-center pl-3"></span>
+                Editar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-      <form onSubmit={handleSubmit} className={formStyles.form_container}>
-        <Input
-          text="imagem"
-          type="file"
-          name="image"
-          handleOnChange={onFileChange}
-        />
-        <Input
-          text="Email"
-          type="email"
-          name="email"
-          placeholder="Digite o seu email"
-          handleOnChange={handleChange}
-          value={user.email || ""}
-        />
-        <Input
-          text="Nome"
-          type="text"
-          name="name"
-          placeholder="Digite o seu nome"
-          handleOnChange={handleChange}
-          value={user.name || ""}
-        />
-        <Input
-          text="Telefone"
-          type="text"
-          name="phone"
-          placeholder="Digite o seu telefone"
-          handleOnChange={handleChange}
-          value={user.phone || ""}
-        />
-        <Input
-          text="Senha"
-          type="password"
-          name="password"
-          placeholder="Digite a sua senha"
-          handleOnChange={handleChange}
-        />
-        <Input
-          text="Confirmação de senhha"
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirme sua senha"
-          handleOnChange={handleChange}
-        />
-        <input type="submit" value="Editar" />
-      </form>
-    </section>
+    </div>
   );
 };

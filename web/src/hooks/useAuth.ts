@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import api from "../utils/api";
 import { useNavigate } from "react-router-dom";
-import UseFlashMessage from "./UseFlashMessage";
+import { useFlashMessage } from "./useFlashMessage";
 
-export default function UseAuth() {
+export const useAuth = () => {
   const [authenticated, setAuthenticated] = useState(false);
-  const { SetFlashMessage } = UseFlashMessage();
+  const { setFlashMessage } = useFlashMessage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,15 +23,15 @@ export default function UseAuth() {
     try {
       const data = await api
         .post("/users/register", user)
-        .then((res) => res.data);
+        .then((response) => response.data);
 
-      authUser(data);
+      await authUser(data);
     } catch (e: any) {
       msgText = e.response.data.message;
       msgType = "error";
     }
 
-    SetFlashMessage(msgText, msgType);
+    setFlashMessage(msgText, msgType);
   }
 
   async function authUser(data: any) {
@@ -45,18 +45,18 @@ export default function UseAuth() {
     let msgType = "success";
 
     try {
-      const data = await api.post("/users/login", user).then((res) => res.data);
+      const data = await api.post("/users/login", user).then((response) => response.data);
 
-      authUser(data);
+      await authUser(data);
     } catch (e: any) {
       msgText = e.response.data.message;
       msgType = "error";
     }
 
-    SetFlashMessage(msgText, msgType);
+    setFlashMessage(msgText, msgType);
   }
 
-  async function logout(user: any) {
+  async function logout() {
     const msgText = "Logout realizado com sucesso!";
     const msgType = "success";
 
@@ -64,8 +64,8 @@ export default function UseAuth() {
     localStorage.removeItem("token");
     api.defaults.headers.common["Authorization"] = "";
     navigate("/");
-    SetFlashMessage(msgText, msgType);
+    setFlashMessage(msgText, msgType);
   }
 
   return { authenticated, register, login, logout };
-}
+};

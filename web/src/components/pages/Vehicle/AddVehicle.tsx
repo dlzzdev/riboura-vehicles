@@ -1,13 +1,10 @@
-import styles from "./AddCar.module.css";
 import api from "../../../utils/api";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import UseFlashMessage from "../../../hooks/UseFlashMessage";
+import { useFlashMessage } from "../../../hooks/useFlashMessage";
 import { CarForm } from "../../form/CarForm";
 
 export const AddCar = () => {
-  const { SetFlashMessage } = UseFlashMessage();
-  const [token] = useState(localStorage.getItem("token"));
+  const { setFlashMessage } = useFlashMessage();
   const navigate = useNavigate();
 
   async function RegisterCar(car: any) {
@@ -25,27 +22,27 @@ export const AddCar = () => {
     });
 
     await api
-      .post("/cars/create", formData, {
+      .post("/vehicles/create", formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       })
       .then((response) => {
-        SetFlashMessage(response.data.message, msgType);
-        navigate("/car/mycars");
+        setFlashMessage(response.data.message, msgType);
+        navigate("/vehicle/myvehicles");
       })
       .catch((err) => {
         msgType = "error";
-        SetFlashMessage(err.response.data.message, msgType);
+        setFlashMessage(err.response.data.message, msgType);
       });
   }
 
   return (
-    <section>
-      <div className={styles.addcar_header}>
-        <h1>Adicionar carro</h1>
-        <p>Após este processo o véiculo ficará dispooínvel para venda.</p>
+    <section className="min-h-screen">
+      <div className="text-center">
+        <p className="text-xl mb-10 mt-2">
+          Após este processo o véiculo ficará disponível para venda.
+        </p>
       </div>
       <CarForm handleSubmit={RegisterCar} btnText="Cadastrar veículo" />
     </section>

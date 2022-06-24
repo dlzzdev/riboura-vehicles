@@ -1,30 +1,24 @@
 import api from "../../../utils/api";
 import { useState, useEffect } from "react";
-import styles from "./AddCar.module.css";
 import { CarForm } from "../../form/CarForm";
 import { useParams } from "react-router-dom";
-import UseFlashMessage from "../../../hooks/UseFlashMessage";
+import { useFlashMessage } from "../../../hooks/useFlashMessage";
 
 export const EditCar = () => {
   const [car, setCar] = useState<any>({});
-  const [token] = useState(localStorage.getItem("token") || "");
-  const { SetFlashMessage } = UseFlashMessage();
+  const { setFlashMessage } = useFlashMessage();
   const { id } = useParams();
 
   useEffect(() => {
     api
-      .get(`/cars/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      .get(`/vehicles/${id}`)
       .then((response) => {
-        setCar(response.data.car);
+        setCar(response.data.vehicle);
       })
       .catch((err) => {
-        SetFlashMessage(err.response.data.message, "error");
+        setFlashMessage(err.response.data.message, "error");
       });
-  }, [id, token, SetFlashMessage]);
+  }, [id, setFlashMessage]);
 
   async function updateCar(car: any) {
     const formData = new FormData();
@@ -39,25 +33,25 @@ export const EditCar = () => {
     });
 
     await api
-      .patch(`/cars/${id}`, formData, {
+      .patch(`/vehicles/${id}`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       })
       .then((response) => {
-        SetFlashMessage(response.data.message, "success");
+        setFlashMessage(response.data.message, "success");
       })
       .catch((err) => {
-        SetFlashMessage(err.response.data.message, "error");
+        setFlashMessage(err.response.data.message, "error");
       });
   }
 
   return (
-    <section>
-      <div className={styles.addcar_header}>
-        <h1>Modificando o veículo: {car.model}</h1>
-        <p>Após a edição,os dados serão atualizados no sistema.</p>
+    <section className="min-h-screen">
+      <div className="text-center">
+        <p className="text-xl mb-6 mt-2 text-neutral-100">
+          Após este processo o véiculo ficará disponível para venda.
+        </p>
       </div>
       {car.model && (
         <CarForm handleSubmit={updateCar} btnText="Atualizar" carData={car} />

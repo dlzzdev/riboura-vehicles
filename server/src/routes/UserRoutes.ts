@@ -1,4 +1,4 @@
-import express from "express";
+import { Router } from "express";
 import {
   register,
   login,
@@ -7,14 +7,21 @@ import {
   editUser,
 } from "../controllers/UserController";
 import { imageUpload } from "../helpers/imageUpload";
+import { verifyId } from "../helpers/verifyId";
 import { verifyToken } from "../helpers/verifyToken";
 
-const router = express.Router();
+const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
 router.get("/checkuser", checkUser);
-router.get("/:id", getUserById);
-router.patch("/edit/:id", verifyToken, imageUpload.single("image"), editUser);
+router.get("/:id", verifyId, getUserById);
+router.patch(
+  "/edit/:id",
+  verifyToken,
+  verifyId,
+  imageUpload.single("image"),
+  editUser
+);
 
 export default router;
